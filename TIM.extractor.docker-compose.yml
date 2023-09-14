@@ -1,0 +1,36 @@
+version: '3'
+services:
+
+  connector-import-extraction:
+    env_file: $TIM_ENV_FILE
+    extends:
+      file: $BASE_DIR/$CONNECTORS/internal-import-file/import-extraction/TIM.docker-compose.yml
+      service: connector-import-extraction
+    build:
+      context: $BASE_DIR/$CONNECTORS/internal-import-file/import-extraction/
+    depends_on:
+      - tim_python_v3.10
+      - opencti
+      - worker
+      - extractor_service
+    restart: always
+    networks:
+      - default
+
+  extractor_service:
+    environment:
+      VISIBILITY: PRIVATE
+    container_name: extractor_service
+    extends:
+      file: $BASE_DIR/cygnus/extractor/docker-compose.yml
+      service: extractor_service
+
+volumes:
+  esdata:
+  s3data:
+  redisdata:
+  amqpdata:
+
+networks:
+  tim-network:
+    external: true

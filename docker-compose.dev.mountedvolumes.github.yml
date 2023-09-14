@@ -1,0 +1,102 @@
+########################################################################################################################
+########################################################################################################################
+# This Docker compose configuration will mount your existing Docker volumes that the application builds and stores data
+# into when you run the `standard docker-compose.yml` file. 
+#
+# NOTE: This may or may not be a good idea. 
+#  - If you are planning on changing the stored record schemas this could cause you issues. 
+#  - If you are planning to use it to allow display/GUI changes to have data to seed the screens with - no issues.
+#
+# Volumes mounted are:
+#      volumes:
+#         esdata:
+#         s3data:
+#         redisdata:
+#         amqpdata:
+#
+# Before running docker-compose - make sure you have "seeded" your environment with the required ENVAR settings:
+# export $(cat .env | grep -v "#" | xargs)
+#
+# To verify they have seeded into the ENVARS you can run the `scripts/validate_env.sh` file.
+#
+# source ./scripts/validate_env.sh
+#
+# To launch this in Docker use:
+# 
+# docker-compose -f ./docker-compose.dev.mountedvolumes.yml up -d
+#
+########################################################################################################################
+########################################################################################################################
+version: '3'
+services:
+  opencti-dev-redis:
+    container_name: opencti-dev-redis-github
+    image: redis:7.0.5
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redisdata:/data
+  opencti-dev-elasticsearch:
+    container_name: opencti-dev-elasticsearch-github
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.ml.enabled=false
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms8G -Xmx8G"
+    restart: unless-stopped
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - 9200:9200
+      - 9300:9300
+  opencti-dev-kibana:
+    container_name: opencti-dev-kibana-github
+    image: docker.elastic.co/kibana/kibana:8.8.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
+    restart: unless-stopped
+    ports:
+      - 5601:5601
+    depends_on:
+      - opencti-dev-elasticsearch
+  opencti-dev-minio:
+    container_name: opencti-dev-minio-github
+    image: minio/minio:RELEASE.2022-09-25T15-44-53Z
+    volumes:
+      - s3data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+  opencti-dev-rabbitmq:
+    container_name: opencti-dev-rabbitmq-github
+    image: rabbitmq:3.11-management
+    volumes:
+      - amqpdata:/var/lib/rabbitmq
+    restart: unless-stopped
+    ports:
+      - 5672:5672
+      - 15672:15672
+volumes:
+  esdata:
+  s3data:
+  redisdata:
+  amqpdata:

@@ -1,2 +1,5 @@
 *.iml
 .env
+.DS_Store
+TIM.env
+TIM.config.import.extract.sh

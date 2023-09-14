@@ -1,21 +1,22 @@
 version: '3'
 services:
   redis:
-    image: redis:7.2.1
+    image: redis:7.0.5
     restart: always
     volumes:
       - redisdata:/data
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.1
     volumes:
       - esdata:/usr/share/elasticsearch/data
     environment:
-      # Uncomment the line below below for a cluster of multiple nodes
-      # - cluster.name=docker-cluster
+      # Comment out the line below for single-node
       - discovery.type=single-node
+      # Uncomment line below below for a cluster of multiple nodes
+      # - cluster.name=docker-cluster
       - xpack.ml.enabled=false
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms8G -Xmx8G"
+      - "ES_JAVA_OPTS=-Xms${ELASTIC_MEMORY_SIZE} -Xmx${ELASTIC_MEMORY_SIZE}"
     restart: always
     ulimits:
       memlock:
@@ -24,41 +25,32 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    ports:
-      - "9200:9200"
   minio:
-    image: minio/minio:RELEASE.2023-05-18T00-05-36Z
+    image: minio/minio:RELEASE.2022-09-25T15-44-53Z
     volumes:
       - s3data:/data
     ports:
       - "9000:9000"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}    
     command: server /data
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://localhost:9000/minio/health/live"
-        ]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
     restart: always
   rabbitmq:
-    image: rabbitmq:3.12-management
+    image: rabbitmq:3.11-management
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - RABBITMQ_NODENAME=rabbit01@localhost
     volumes:
       - amqpdata:/var/lib/rabbitmq
     restart: always
   opencti:
-    image: opencti/platform:5.10.3
+    image: opencti/platform:5.6.2
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
       - APP__PORT=8080
@@ -93,7 +85,7 @@ services:
       - rabbitmq
     restart: always
   worker:
-    image: opencti/worker:5.10.3
+    image: opencti/worker:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -105,7 +97,7 @@ services:
       replicas: 3
     restart: always
   connector-export-file-stix:
-    image: opencti/connector-export-file-stix:5.10.3
+    image: opencti/connector-export-file-stix:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -119,7 +111,7 @@ services:
     depends_on:
       - opencti
   connector-export-file-csv:
-    image: opencti/connector-export-file-csv:5.10.3
+    image: opencti/connector-export-file-csv:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -133,7 +125,7 @@ services:
     depends_on:
       - opencti
   connector-export-file-txt:
-    image: opencti/connector-export-file-txt:5.10.3
+    image: opencti/connector-export-file-txt:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -147,7 +139,7 @@ services:
     depends_on:
       - opencti
   connector-import-file-stix:
-    image: opencti/connector-import-file-stix:5.10.3
+    image: opencti/connector-import-file-stix:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -163,7 +155,7 @@ services:
     depends_on:
       - opencti
   connector-import-document:
-    image: opencti/connector-import-document:5.10.3
+    image: opencti/connector-import-document:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -181,7 +173,7 @@ services:
     depends_on:
       - opencti
   connector-alienvault:
-    image: opencti/connector-alienvault:5.8.2
+    image: opencti/connector-alienvault:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -209,8 +201,8 @@ services:
     restart: always
     depends_on:
       - opencti
-  connector-cisa-known-exploited-vulnerabilities:
-    image: opencti/connector-cisa-known-exploited-vulnerabilities:5.8.2
+  connector-cisa-exploited:
+    image: opencti/connector-cisa-known-exploited-vulnerabilities:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -228,7 +220,7 @@ services:
     depends_on:
       - opencti
   connector-amitt:
-    image: opencti/connector-amitt:5.8.2
+    image: opencti/connector-amitt:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -246,7 +238,7 @@ services:
     depends_on:
       - opencti
   connector-cryptolaemus:
-    image: opencti/connector-cryptolaemus:5.8.2
+    image: opencti/connector-cryptolaemus:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -261,7 +253,7 @@ services:
     depends_on:
       - opencti
   connector-cve:
-    image: opencti/connector-cve:5.8.2
+    image: opencti/connector-cve:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -281,7 +273,7 @@ services:
     depends_on:
       - opencti
   connector-cyber-campaign-collection:
-    image: opencti/connector-cyber-campaign-collection:5.8.2
+    image: opencti/connector-cyber-campaign-collection:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -300,7 +292,7 @@ services:
     depends_on:
       - opencti
   connector-cybercrimetracker:
-    image: opencti/connector-cybercrime-tracker:5.8.2
+    image: opencti/connector-cybercrime-tracker:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -316,11 +308,11 @@ services:
       - CYBERCRIME_TRACKER_INTERVAL=86400
       - CYBERCRIME_TRACKER_CREATE_INDICATORS=true
       - CYBERCRIME_TRACKER_CREATE_OBSERVABLES=true
-    restart: always
+    restart: always 
     depends_on:
       - opencti
   connector-malware-bazaar-recent-additions:
-    image: opencti/connector-malwarebazaar-recent-additions:5.8.2
+    image: opencti/connector-malwarebazaar-recent-additions:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -336,11 +328,11 @@ services:
       - MALWAREBAZAAR_RECENT_ADDITIONS_INCLUDE_REPORTERS= # (Optional) Only download files uploaded by these reporters. (Comma separated)
       - MALWAREBAZAAR_RECENT_ADDITIONS_LABELS=malware-bazar # (Optional) Labels to apply to uploaded Artifacts. (Comma separated)
       - MALWAREBAZAAR_RECENT_ADDITIONS_LABELS_COLOR=#54483b # Color to use for labels
-    restart: always
+    restart: always       
     depends_on:
       - opencti
   connector-mitre:
-    image: opencti/connector-mitre:5.8.2
+    image: opencti/connector-mitre:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -360,9 +352,9 @@ services:
       - MITRE_INTERVAL=7 # In days, must be strictly greater than 1
     restart: always
     depends_on:
-      - opencti
+      - opencti 
   connector-opencti:
-    image: opencti/connector-opencti:5.8.2
+    image: opencti/connector-opencti:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -377,11 +369,11 @@ services:
       - CONFIG_SECTORS_FILE_URL=https://raw.githubusercontent.com/OpenCTI-Platform/datasets/master/data/sectors.json
       - CONFIG_GEOGRAPHY_FILE_URL=https://raw.githubusercontent.com/OpenCTI-Platform/datasets/master/data/geography.json
       - CONFIG_INTERVAL=7 # In days, must be strictly greater than 1
-    restart: always
+    restart: always 
     depends_on:
-      - opencti
+      - opencti 
   connector-sekoia:
-    image: opencti/connector-sekoia:5.8.2
+    image: opencti/connector-sekoia:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -393,13 +385,13 @@ services:
       - CONNECTOR_UPDATE_EXISTING_DATA=false
       - CONNECTOR_LOG_LEVEL=info
       - SEKOIA_API_KEY=ChangeMe
-      - SEKOIA_START_DATE=2022-01-01 # Optional, the date to start consuming data from. Maybe in the formats YYYY-MM-DD or YYYY-MM-DDT00:00:00
-      - SEKOIA_CREATE_OBSERVABLES=true # Create observables from indicators 
-    restart: always
+      - SEKOIA_START_DATE=2022-01-01    # Optional, the date to start consuming data from. Maybe in the formats YYYY-MM-DD or YYYY-MM-DDT00:00:00
+      - SEKOIA_CREATE_OBSERVABLES=true  # Create observables from indicators 
+    restart: always 
     depends_on:
-      - opencti
+      - opencti 
   connector-urlhaus-recent-payloads:
-    image: opencti/connector-urlhaus-recent-payloads:5.8.2
+    image: opencti/connector-urlhaus-recent-payloads:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -419,11 +411,11 @@ services:
       - URLHAUS_RECENT_PAYLOADS_LABELS_COLOR=#54483b
       - URLHAUS_RECENT_PAYLOADS_SIGNATURE_LABEL_COLOR=#0059f7 # Color for signature match label
       - URLHAUS_RECENT_PAYLOADS_FILETYPE_LABEL_COLOR=#54483b # Color to use for filetype label
-    restart: always
+    restart: always    
     depends_on:
-      - opencti
+      - opencti   
   connector-urlhaus:
-    image: opencti/connector-urlhaus:5.8.2
+    image: opencti/connector-urlhaus:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -438,11 +430,11 @@ services:
       - URLHAUS_IMPORT_OFFLINE=true
       - URLHAUS_CREATE_INDICATORS=true
       - URLHAUS_INTERVAL=3 # In days, must be strictly greater than 1
-    restart: always
+    restart: always  
     depends_on:
-      - opencti
+      - opencti  
   connector-vxvault:
-    image: opencti/connector-vxvault:5.8.2
+    image: opencti/connector-vxvault:5.6.2
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -456,9 +448,10 @@ services:
       - VXVAULT_URL=http://vxvault.net/URL_List.php
       - VXVAULT_CREATE_INDICATORS=true
       - VXVAULT_INTERVAL=3 # In days, must be strictly greater than 1
-    restart: always
+    restart: always                           
 volumes:
   esdata:
   s3data:
   redisdata:
   amqpdata:
+

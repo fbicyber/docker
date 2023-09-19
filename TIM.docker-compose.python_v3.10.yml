@@ -10,7 +10,7 @@ version: '3'
 services:
   tim_python_v3.10:
     environment:
-      PYCTI=${PYCTI}
+      - PYCTI=${PYCTI}
     image: tim_python_v3.10:latest
     build:
       dockerfile: TIM.python_v3.10.Dockerfile

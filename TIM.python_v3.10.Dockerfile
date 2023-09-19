@@ -4,7 +4,8 @@ FROM python:3.10-alpine
 
 WORKDIR /TIM
 
-COPY client-python /TIM/pycti
+# COPY client-python /TIM/pycti
+COPY $PYCTI /TIM/pycti
 ##############################################################################################
 # Upgrade PIP and wheel
 ##############################################################################################

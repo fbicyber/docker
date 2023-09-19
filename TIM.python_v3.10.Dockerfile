@@ -3,7 +3,7 @@ FROM python:3.10-alpine
 # FROM python:3.9.12-alpine3.15 // no longer available 
 
 WORKDIR /TIM
-
+RUN printf "\nCopying from [$PYCTI] to image.\n"
 # COPY client-python /TIM/pycti
 COPY $PYCTI /TIM/pycti
 ##############################################################################################

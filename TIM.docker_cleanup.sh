@@ -4,7 +4,7 @@ printf "\nExecuting Docker cleanup.\n"
 # Stop all containers at once
 docker-compose --project-name tim -f TIM.docker-compose.yml --env-file $TIM_ENV_FILE down
 
-if [ $VISIBILITY = "PUBLIC" ]; then
+if [ $VISIBILITY = "PRIVATE" ]; then
     docker-compose --project-name tim -f TIM.extractor.docker-compose.yml --env-file $TIM_ENV_FILE down
 fi
 

@@ -1,0 +1,14 @@
+
+##############################################################################################
+# Steps to build:
+#
+# 1) Clone client-python: git clone https://gitlab.324cate.com/threat-intel/opencti/client-python
+# 2) Build container:  docker-compose -f TIM.docker-compose.python_v3.10.yml up --force-recreate -d
+##############################################################################################
+#
+version: '3'
+services:
+  tim_python_v3.10:
+    image: tim_python_v3.10:latest
+    build:
+      dockerfile: TIM.python_v3.10.Dockerfile

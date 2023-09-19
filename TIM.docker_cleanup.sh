@@ -9,7 +9,7 @@ if [ $VISIBILITY = "PRIVATE" ]; then
 fi
 
 # remove TIM locally built images
-if [ ! "$(docker ps -a | grep tim)" ] ; then
+if [ "$(docker ps -a | grep tim)" ] ; then
     IMGS=$(docker images | grep tim | awk '{print $3}')
     printf "Running docker rmi on [$IMGS] images.\n"
     docker rmi $IMGS

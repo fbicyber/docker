@@ -9,7 +9,7 @@ if [ $VISIBILITY = "PRIVATE" ]; then
 fi
 
 # remove TIM locally built images
-$(docker images | grep tim | awk '{print $3}') && docker rmi 
+[ ! "$(docker ps -a | grep tim)" ] && docker rmi 
 
 docker system prune
 

@@ -9,8 +9,14 @@
 version: '3'
 services:
   tim_python_v3.10:
+    env_file: $TIM_ENV_FILE
     image: tim_python_v3.10:latest
     build:
-      dockerfile: TIM.python_v3.10.Dockerfile
+      context: .
       args:
+        ARG_PYCTI_ENV: ${PYCTI}
+        ARG_PYCTI_TXT: "WHAT IS THIS?! ${PRIVATE_TIM}"
         PYCTI: ${PYCTI}
+      environment:
+        ENV_PUBLIC_TIM: ${PUBLIC_TIM}
+      dockerfile: TIM.python_v3.10.Dockerfile

@@ -2,6 +2,7 @@
 
 printf "\nExecuting Docker cleanup.\n"
 # Stop all containers at once
+echo "pycti ~~~> ${PYCTI}"
 docker-compose --project-name tim -f TIM.docker-compose.yml --env-file $TIM_ENV_FILE down
 
 if [ $VISIBILITY = "PRIVATE" ]; then

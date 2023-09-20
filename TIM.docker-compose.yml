@@ -2,16 +2,17 @@ version: '3'
 services:
 
   tim_python_v3.10:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     image: tim_python_v3.10:latest
     build:
-      context: $DOCKER_DIR
+      args:
+        - PYCTI
+        - BASE_DIR
+      context: $BASE_DIR
       dockerfile: $DOCKER_DIR/TIM.python_v3.10.Dockerfile
 
   redis:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     image: redis:7.0.11
     container_name: redis
     restart: always
@@ -21,8 +22,7 @@ services:
       - redisdata:/data
 
   elasticsearch:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
     container_name: elasticsearch
     volumes:
@@ -45,8 +45,7 @@ services:
       - 9300:9300
 
   minio:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     image: minio/minio:RELEASE.2023-05-18T00-05-36Z
     container_name: minio
     volumes:
@@ -72,8 +71,7 @@ services:
     restart: always
 
   rabbitmq:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     image: rabbitmq:3.12-management
     container_name: rabbitmq
     volumes:
@@ -84,8 +82,7 @@ services:
     restart: always
 
   opencti:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     extends:
       file: $BASE_DIR/$OPENCTI/opencti-platform/TIM.docker-compose.yml
       service: opencti
@@ -102,8 +99,7 @@ services:
     restart: always
 
   worker:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     extends:
       file: $BASE_DIR/$OPENCTI/opencti-worker/TIM.docker-compose.yml
       service: worker
@@ -143,8 +139,7 @@ services:
   #     service: extractor_service
 
   connector-actor-import:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     extends:
       file: $BASE_DIR/$CONNECTORS/internal-import-file/import-actor/TIM.docker-compose.yml
       service: connector-import-actor
@@ -157,8 +152,7 @@ services:
     restart: always
 
   connector-import-file-stix:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     extends:
       file: $BASE_DIR/$CONNECTORS/internal-import-file/import-file-stix/TIM.docker-compose.yml
       service: connector-import-file-stix
@@ -171,8 +165,7 @@ services:
     restart: always
 
   connector-import-document:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     image: opencti/connector-import-document:5.8.7
     environment:
       - OPENCTI_URL=$OPENCTI_URL
@@ -185,7 +178,7 @@ services:
       - CONNECTOR_AUTO=false # Enable/disable auto-import of file
       - CONNECTOR_ONLY_CONTEXTUAL=false # Only extract data related to an entity (a report, a threat actor, etc.)
       - CONNECTOR_CONFIDENCE_LEVEL=15 # From 0 (Unknown) to 100 (Fully trusted)
-      - CONNECTOR_LOG_LEVEL=debug
+      - CONNECTOR_LOG_LEVEL=info
       - IMPORT_DOCUMENT_CREATE_INDICATOR=true
     restart: always
     depends_on:
@@ -193,8 +186,7 @@ services:
       - worker
 
   connector-opencti:
-    env_file:
-      - $TIM_ENV_FILE
+    env_file: $TIM_ENV_FILE
     image: opencti/connector-opencti:5.8.7
     environment:
       - OPENCTI_URL=$OPENCTI_URL
@@ -206,7 +198,7 @@ services:
       - CONNECTOR_CONFIDENCE_LEVEL=90 # From 0 (Unknown) to 100 (Fully trusted)
       - CONNECTOR_UPDATE_EXISTING_DATA=false
       - CONNECTOR_RUN_AND_TERMINATE=false
-      - CONNECTOR_LOG_LEVEL=debug
+      - CONNECTOR_LOG_LEVEL=info
       - CONFIG_SECTORS_FILE_URL=https://raw.githubusercontent.com/OpenCTI-Platform/datasets/master/data/sectors.json
       - CONFIG_GEOGRAPHY_FILE_URL=https://raw.githubusercontent.com/OpenCTI-Platform/datasets/master/data/geography.json
       - CONFIG_INTERVAL=7 # In days, must be strictly greater than 1

@@ -219,10 +219,10 @@ for C_PATH in $CONNECTOR_PATHS; do
 done
 
 RUN_DOCKER() {
-    docker-compose --project-name tim --env-file $TIM_ENV_FILE -f ./TIM.docker-compose.yml up --force-recreate --build -d
+    docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d
     if [ $VISIBILITY = "PRIVATE" ]; then
         # extractor is only available in the PRIVATE repo
-        docker-compose --project-name tim --env-file $TIM_ENV_FILE -f TIM.extractor.docker-compose.yml up --force-recreate --build -d
+        docker-compose --project-name tim -f TIM.extractor.docker-compose.yml up --force-recreate --build -d
     fi
 } 
 

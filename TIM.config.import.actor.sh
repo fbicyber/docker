@@ -16,7 +16,7 @@ connector:
   auto: false # Enable/disable auto-import of file
   only_contextual: false # Only extract data related to an entity (a report, a threat actor, etc.)
   confidence_level: 100 # From 0 (Unknown) to 100 (Fully trusted)
-  log_level: "debug"
+  log_level: "info"
 
 import_actor:
   create_indicator: false

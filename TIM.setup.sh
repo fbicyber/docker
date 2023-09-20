@@ -15,11 +15,10 @@ export DOCKER_DIR="$(dirname $(realpath "$0"))"
 export VISIBILITY=PRIVATE
 
 # **
-# consume .env file variables and make values available to script
+printf "Consume [${TIM_ENV_FILE}] file variables and make values available to script.\n"
 # **
-if [ -f $TIM_ENV_FILE ]
-then
-  export $(cat $TIM_ENV_FILE | xargs)
+if [ -f $TIM_ENV_FILE ]; then
+  export $(cat $TIM_ENV_FILE | grep -v "#" |xargs)
 fi
 
 usage_msg="
@@ -123,7 +122,6 @@ else
         BRANCH="master-TIM"
     fi
 fi
-printf "BRANCH is set to [${BRANCH}]\n"
 
 # **
 printf "\n==> setup project names based on visibility of [$VISIBILITY]\n"
@@ -140,31 +138,46 @@ for project in $PROJECTS; do
     printf "$project\n"
 done
 
+CK_BRANCH_EXISTS(){
+    if [ "$(git branch --list "$BRANCH")" != "" ]; then
+        printf "BRANCH is set to [${BRANCH}]\n"
+    else
+        echo "The branch [${BRANCH}] does not exist, exiting ..."
+        exit
+    fi
+}
+
 # **
 printf "\n==> clone and/or update projects\n"
 # **
 for project in ${PROJECTS}; do
     printf "\nchecking project [$project] to clone or update\n"
     PROJECT_DIR=$BASE_DIR/$project
-
     if [ ! -d $PROJECT_DIR ] ; then
         printf "Project directory [$PROJECT_DIR] does not exist, cloning [$GIT_URL/$project] on branch [$BRANCH]\n"
-        git clone --branch $BRANCH $GIT_URL/$project $BASE_DIR/$project
-    fi
-    
-    if [ -d $PROJECT_DIR ] && [ "$UPDATE_BRANCH" = true ]; then
-        printf "[$project] repository exists. Updating local repository\n"
-        git -C $PROJECT_DIR checkout $BRANCH
-        git -C $PROJECT_DIR pull
+        git clone --branch $BRANCH $GIT_URL/$project $PROJECT_DIR
+    else
+        if  [ "$UPDATE_BRANCH" = true ]; then
+            CK_BRANCH_EXISTS
+            printf "[$project] repository exists. Updating local repository\n"
+            git -C $PROJECT_DIR checkout $BRANCH
+            git -C $PROJECT_DIR pull
+        fi
     fi
 done
 
 if [ $VISIBILITY = "PRIVATE" ]; then
     EXTRACTOR_BRANCH=master
     EXTRACTOR_DIR=$BASE_DIR/cygnus/extractor
-    EXTRACTOR_GIT=$GIT_URL/cygnus/enrichment-services/extractor
+    EXTRACTOR_GIT=$PRIVATE_EXTRACTOR_GIT_URL
     if [ ! -d "$EXTRACTOR_DIR" ]; then
         git clone --branch $EXTRACTOR_BRANCH $EXTRACTOR_GIT $EXTRACTOR_DIR
+    else
+        if  [ "$UPDATE_BRANCH" = true ]; then
+            printf "Extractor repository exists. Updating local repository\n"
+            git -C $EXTRACTOR_DIR checkout $EXTRACTOR_BRANCH
+            git -C $EXTRACTOR_DIR pull
+        fi
     fi
 fi
 

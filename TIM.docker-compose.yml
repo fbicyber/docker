@@ -113,31 +113,6 @@ services:
       replicas: 3
     restart: always
 
-  # connector-import-extraction:
-  #   environment:
-  #     VISIBILITY: PRIVATE
-  #   env_file:
-  #     - $TIM_ENV_FILE
-  #   extends:
-  #     file: $BASE_DIR/$CONNECTORS/internal-import-file/import-extraction/TIM.docker-compose.yml
-  #     service: connector-import-extraction
-  #   build:
-  #     context: $BASE_DIR/$CONNECTORS/internal-import-file/import-extraction/
-  #   depends_on:
-  #     - tim_python_v3.10
-  #     - opencti
-  #     - worker
-  #     - extractor_service
-  #   restart: always
-
-  # extractor_service:
-  #   environment:
-  #     VISIBILITY: PRIVATE
-  #   container_name: extractor_service
-  #   extends:
-  #     file: $BASE_DIR/cygnus/extractor/docker-compose.yml
-  #     service: extractor_service
-
   connector-actor-import:
     env_file: $TIM_ENV_FILE
     extends:

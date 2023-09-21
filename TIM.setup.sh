@@ -216,13 +216,12 @@ CONNECTOR_PATHS="$IMPORT_ACTOR $IMPORT_EXTRACT $IMPORT_STIX"
 for C_PATH in $CONNECTOR_PATHS; do
     if [ -d $C_PATH ]; then
         CONN_CONFIG=$C_PATH/config.yml
-        printf "Configuring [$CONN_CONFIG]\n"
         if [ "$GEN_CONFIG_FILES" = true ]; then
             # force write new config files
             CONFIG_CONNECTOR $CONN_CONFIG
         else
             # only write new config files if they do not exist
-            if [ -f $C_PATH/config.yml ]; then
+            if [ ! -f $CONN_CONFIG ]; then
                 CONFIG_CONNECTOR $CONN_CONFIG
             fi
         fi
@@ -232,10 +231,12 @@ for C_PATH in $CONNECTOR_PATHS; do
 done
 
 RUN_DOCKER() {
-    docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d
+    # docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d
     if [ $VISIBILITY = "PRIVATE" ]; then
         # extractor is only available in the PRIVATE repo
-        docker-compose --project-name tim -f TIM.extractor.docker-compose.yml up --force-recreate --build -d
+        docker-compose --project-name tim -f ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml up --force-recreate --build -d
+    else
+        docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d
     fi
 } 
 

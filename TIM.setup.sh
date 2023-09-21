@@ -158,6 +158,7 @@ for project in ${PROJECTS}; do
         git clone --branch $BRANCH $GIT_URL/$project $PROJECT_DIR
     else
         if  [ "$UPDATE_BRANCH" = true ]; then
+            cd $PROJECT_DIR
             CK_BRANCH_EXISTS
             printf "[$project] repository exists. Updating local repository\n"
             git -C $PROJECT_DIR checkout $BRANCH
@@ -165,6 +166,7 @@ for project in ${PROJECTS}; do
         fi
     fi
 done
+cd $DOCKER_DIR
 
 if [ $VISIBILITY = "PRIVATE" ]; then
     EXTRACTOR_BRANCH=master

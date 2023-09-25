@@ -212,7 +212,11 @@ printf "\n==> setup connector config.yml file locations\n"
 # **
 CONN_PATH=$BASE_DIR/$CONNECTORS/internal-import-file
 export IMPORT_ACTOR=$CONN_PATH/import-actor/src/config
-export IMPORT_EXTRACT=$CONN_PATH/import-extraction/src
+if [ $VISIBILITY = "PRIVATE" ]; then
+    export IMPORT_EXTRACT=$CONN_PATH/import-extraction/src
+else
+    export IMPORT_EXTRACT=""
+fi
 export IMPORT_STIX=$CONN_PATH/import-file-stix/src
 CONNECTOR_PATHS="$IMPORT_ACTOR $IMPORT_EXTRACT $IMPORT_STIX"
 for C_PATH in $CONNECTOR_PATHS; do
@@ -233,7 +237,7 @@ for C_PATH in $CONNECTOR_PATHS; do
 done
 
 RUN_DOCKER() {
-    # docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d
+    printf "Running docker-compose with a [$VISIBILITY] visibility.\n"
     if [ $VISIBILITY = "PRIVATE" ]; then
         # extractor is only available in the PRIVATE repo
         docker-compose --project-name tim -f ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml up --force-recreate --build -d

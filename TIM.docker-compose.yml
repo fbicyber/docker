@@ -3,10 +3,6 @@ version: '3'
 
 x-service_defaults: &service_defaults
   env_file: $TIM_ENV_FILE
-  environment:
-    - OPENCTI_URL=$OPENCTI_URL
-    - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-    - CONNECTOR_LOG_LEVEL=info
   restart: always
   logging:
     driver: json-file
@@ -64,7 +60,7 @@ services:
       - s3data:/data
     ports:
       - ${MINIO__PORT}:${MINIO__PORT}
-      - "9001:9001"
+      - 9001:9001
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}

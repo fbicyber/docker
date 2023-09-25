@@ -1,14 +1,6 @@
 version: '3'
 services:
 
-  extractor_service:
-    environment:
-      VISIBILITY: PRIVATE
-    container_name: extractor_service
-    extends:
-      file: $BASE_DIR/cygnus/extractor/docker-compose.yml
-      service: extractor_service
-
   connector-import-extraction:
     env_file: $TIM_ENV_FILE
     extends:
@@ -22,6 +14,16 @@ services:
       - worker
       - extractor_service
     restart: always
+    networks:
+      - default
+
+  extractor_service:
+    environment:
+      VISIBILITY: PRIVATE
+    container_name: extractor_service
+    extends:
+      file: $BASE_DIR/cygnus/extractor/docker-compose.yml
+      service: extractor_service
 
 volumes:
   esdata:

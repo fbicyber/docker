@@ -238,11 +238,15 @@ done
 
 RUN_DOCKER() {
     printf "\nRunning docker-compose with a [$VISIBILITY] visibility.\n"
+    DC_CMD="docker-compose --project-name tim"
+    DC_OPTS="up --force-recreate --build -d --output-file _run_docker_results.txt"
     if [ $VISIBILITY = "PRIVATE" ]; then
         # extractor is only available in the PRIVATE repo
-        docker-compose --project-name tim -f ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml up --force-recreate --build -d
+        # docker-compose --project-name tim -f ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml up --force-recreate --build -d 
+        $DC_CMD ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml $DC_OPTS
     else
-        docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d
+        # docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d
+        $DC_CMD ./TIM.docker-compose.yml $DC_OPTS
     fi
 } 
 

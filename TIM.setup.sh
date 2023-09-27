@@ -243,6 +243,7 @@ RUN_DOCKER() {
     if [ $VISIBILITY = "PRIVATE" ]; then
         # extractor is only available in the PRIVATE repo
         # docker-compose --project-name tim -f ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml up --force-recreate --build -d 
+        echo "$DC_CMD ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml $DC_OPTS"
         $DC_CMD ./TIM.docker-compose.yml -f TIM.extractor.docker-compose.yml $DC_OPTS
     else
         # docker-compose --project-name tim -f ./TIM.docker-compose.yml up --force-recreate --build -d

@@ -3,3 +3,4 @@
 .DS_Store
 TIM.env
 TIM.config.import.extract.sh
+logs.txt
